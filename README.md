@@ -1,26 +1,20 @@
-
-
-# valorant-audio
-
-无畏契约(瓦洛兰特)游戏音频提取
-
-<!-- PROJECT SHIELDS -->
-
-![](https://img.shields.io/badge/python-%3E%3D3.10-blue)
 [![Contributors][contributors-shield]][contributors-url]
 [![Forks][forks-shield]][forks-url]
 [![Stargazers][stars-shield]][stars-url]
 [![Issues][issues-shield]][issues-url]
 [![MIT License][license-shield]][license-url]
-[![LinkedIn][linkedin-shield]][linkedin-url]
 
-<!-- PROJECT LOGO -->
 <br />
-<a href="https://github.com/Virace/valorant-audio">
-</a>
-<h3 align="center">valorant-audio</h3>
-<p align="center">自动化提取并整理游戏内台词音频文件</p>
+<div align="center">
+  <a href="https://github.com/Virace/valorant-audio">
+  </a>
 
+  <h3 align="center">valorant-audio</h3>
+
+  <p align="center">
+    自动化提取并整理游戏内台词音频文件
+  </p>
+</div>
  
 ## 目录
 
