@@ -1,3 +1,4 @@
+[![Python][requires-python]][python-url]
 [![Contributors][contributors-shield]][contributors-url]
 [![Forks][forks-shield]][forks-url]
 [![Stargazers][stars-shield]][stars-url]
@@ -92,6 +93,9 @@ eg:
 [issues-url]: https://github.com/Virace/valorant-audio/issues
 [license-shield]: https://img.shields.io/github/license/Virace/valorant-audio.svg?style=for-the-badge
 [license-url]: https://github.com/Virace/valorant-audio/blob/master/LICENSE.txt
+[python-url]: https://www.python.org/downloads/release/python-31013/
+[requires-python]: https://img.shields.io/python/required-version-toml?tomlFilePath=https%3A%2F%2Fraw.githubusercontent.com%2FVirace%2Fvalorant-audio%2Fmain%2Fpyproject.toml&style=for-the-badge
+
 [product-screenshot]: images/screenshot.png
 
 
