@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "valorant-audio"
+version = "0.1.0"
+description = "自动化提取并整理游戏内台词音频文件"
+authors = ["Virace <Virace@aliyun.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+ue4parse = {git = "ssh://git@github.com/MinshuG/pyUE4Parse.git"}
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
