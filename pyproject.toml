@@ -11,6 +11,7 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.10"
 ue4parse = {git = "ssh://git@github.com/MinshuG/pyUE4Parse.git"}
+loguru = "^0.7.2"
 
 
 [build-system]
