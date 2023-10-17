@@ -4,7 +4,7 @@ requires-python = "3.10"
 [tool.poetry]
 name = "valorant-audio"
 version = "0.1.0"
-description = "自动化提取并整理游戏内台词音频文件"
+description = ""
 authors = ["Virace <Virace@aliyun.com>"]
 readme = "README.md"
 
@@ -12,6 +12,8 @@ readme = "README.md"
 python = "^3.10"
 ue4parse = {git = "ssh://git@github.com/MinshuG/pyUE4Parse.git"}
 loguru = "^0.7.2"
+beautifulsoup4 = "^4.12.2"
+lxml = "^4.9.3"
 
 
 [build-system]
