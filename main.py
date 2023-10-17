@@ -11,6 +11,8 @@ import gc
 import json
 import os
 import shutil
+import traceback
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor, as_completed
 
 from UE4Parse.Assets.Objects.FGuid import FGuid
 from UE4Parse.Encryption import FAESKey
@@ -21,7 +23,7 @@ from bs4 import BeautifulSoup
 from loguru import logger
 
 from Utils import common
-from config import AES_KEY, GAME_PATH, LOCALIZATION, OUTPUT_PATH, PACKAGE_PREFIX
+from config import AES_KEY, GAME_PATH, LOCALIZATION, OUTPUT_PATH, PACKAGE_PREFIX, VGMSTREAM_PATH
 from hook.wwiser.parser import wparser
 from hook.wwiser.viewer import wdumper
 
@@ -44,6 +46,12 @@ def get_valorant_version(path):
             pos += 2
             version = data[pos:pos + 32].decode("utf-16le").rstrip("\x00")
         return version
+
+
+def wem2wav(vgmstream_path, wem_path, wav_path, delete_wem=True):
+    os.system(f'{vgmstream_path} {wem_path} -o {wav_path}')
+    if delete_wem:
+        os.remove(wem_path)
 
 
 class ValorantAudio:
@@ -181,12 +189,14 @@ class ValorantAudio:
 
         return ids
 
-    def get_audio_hash(self):
+    def get_audio_hash(self, files=None):
         """
-        获取音频hash
+        获取音频hash.
+        :param files:
         """
         result = dict()
-        files = self.mount_paks()
+        if files is None:
+            files = self.mount_paks()
 
         for name, file in files.items():
 
@@ -214,3 +224,35 @@ class ValorantAudio:
             json.dump(result, f, ensure_ascii=False, indent=4)
 
         return result
+
+    def get_audio(self, files=None):
+        """
+        获取音频
+        :param files:
+        """
+        if files is None:
+            files = self.mount_paks()
+
+        # 只有转码用多线程
+        with ProcessPoolExecutor(max_workers=32) as e:
+            fs = dict()
+            for name, file in files.items():
+                if 'Event' in name:
+                    continue
+
+                logger.info(f'保存{os.path.basename(file.Name)}')
+
+                filename = os.path.join(self.AUDIO_PATH, os.path.basename(file.Name))
+                with open(filename, 'wb') as f:
+                    f.write(self._get_file(file))
+
+                # 线程池
+
+                fs[e.submit(wem2wav, VGMSTREAM_PATH, filename,
+                            os.path.splitext(filename)[0] + '.wav', True)] = filename
+
+            for f in as_completed(fs):
+                try:
+                    f.result()
+                except Exception as exc:
+                    traceback.print_exc()
