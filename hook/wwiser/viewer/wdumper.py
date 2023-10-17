@@ -4,12 +4,13 @@
 # @Site    : x-item.com
 # @Software: Pycharm
 # @Create  : 2023/10/14 22:50
-# @Update  : 2023/10/15 0:33
+# @Update  : 2023/10/17 20:59
 # @Detail  : 
 
-import logging
-from wwiser.wwiser.viewer import wloader
+from loguru import logger as logging
+
 from wwiser.wwiser.parser import wmodel
+from wwiser.wwiser.viewer import wloader
 
 TYPE_TXT = 'txt'
 TYPE_XSL = 'xsl'
@@ -289,4 +290,3 @@ class DumpPrinter(object):
             else:
                 for subnode in children:
                     self._print_txt_node(subnode, depth, None)
-

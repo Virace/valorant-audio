@@ -4,18 +4,20 @@
 # @Site    : x-item.com
 # @Software: Pycharm
 # @Create  : 2023/10/14 22:53
-# @Update  : 2023/10/14 23:02
+# @Update  : 2023/10/17 20:58
 # @Detail  : 
 
 from wwiser.wwiser.parser.wparser import *
 from . import wio
 
+from loguru import logger as logging
+
+
 class Parser(object):
     def __init__(self):
-        #self._ignore_version = ignore_version
+        # self._ignore_version = ignore_version
         self._banks = {}
         self._names = None
-
 
     def _check_header(self, r, bank):
         root = bank.get_root()
@@ -24,8 +26,8 @@ class Parser(object):
         fourcc = r.fourcc()
         if fourcc == b'AKBK':
             # very early versions have a mini header before BKHD
-            _unknown = r.u32() #null
-            _unknown = r.u32() #null
+            _unknown = r.u32()  # null
+            _unknown = r.u32()  # null
             r.guess_endian32(0x10)
             fourcc = r.fourcc()
 
@@ -34,11 +36,10 @@ class Parser(object):
 
         _size = r.u32()
 
-
         version = r.u32()
         if version == 0 or version == 1:
             _unknown = r.u32()
-            version = r.u32() #actual version in very early banks
+            version = r.u32()  # actual version in very early banks
 
         # strange variations
         if version in wdefs.bank_custom_versions:
@@ -66,17 +67,18 @@ class Parser(object):
                 raise wmodel.VersionError("encrypted bank version (needs xorpad.bin)", -1)
             r.set_xorpad(xorpad)
             r.skip(-4)
-            version = r.u32() #re-read unxor'd
+            version = r.u32()  # re-read unxor'd
 
         # overwrite for cursom versions
         root.set_version(version)
-        if version not in wdefs.bank_versions: #not self._ignore_version and
+        if version not in wdefs.bank_versions:  # not self._ignore_version and
             # allow since there shouldn't be that many changes from known versions
             if version <= wdefs.ancient_versions:
-                logging.warning("parser: support for version %i is incomplete and may output errors (can't fix)", version)
+                logging.warning("parser: support for version %i is incomplete and may output errors (can't fix)",
+                                version)
             else:
                 logging.warning("parser: unknown bank version %i, may output errors (report)", version)
-            #raise wmodel.VersionError("unsupported bank version %i" % (version), -1)
+            # raise wmodel.VersionError("unsupported bank version %i" % (version), -1)
 
         r.seek(current)
 
@@ -128,7 +130,7 @@ class Parser(object):
         except wio.ReaderError as e:
             error_info = self._print_errors(e)
             logging.error("parser: error parsing %s (corrupted file?), error:\n%s" % (filename, error_info))
-            #logging.exception also prints stack trace
+            # logging.exception also prints stack trace
         except Exception as e:
             logging.error("parser: error parsing " + filename, e)
 
@@ -149,7 +151,7 @@ class Parser(object):
                 exc_info = '%s- %s' % ('  ' * len(info), line[index:])
                 info.append(exc_info)
 
-        #[exceptions.append(line) for line in msg_list if line.startswith('Exception:')]
+        # [exceptions.append(line) for line in msg_list if line.startswith('Exception:')]
         text = '\n'.join(info)
         return text
 
@@ -170,9 +172,9 @@ class Parser(object):
 
         except wmodel.VersionError as e:
             return e.msg
-        #other exceptions should be handled externally
-        #except wmodel.ParseError as e:
-            #bank.add_error(str(e))
+        # other exceptions should be handled externally
+        # except wmodel.ParseError as e:
+        # bank.add_error(str(e))
 
         if bank.get_error_count() > 0:
             logging.info("parser: ERRORS! %i found (report issue)" % bank.get_error_count())
@@ -184,7 +186,6 @@ class Parser(object):
 
         self._banks[filename] = bank
         return None
-
 
     def get_banks(self):
         banks = list(self._banks.values())
@@ -198,12 +199,12 @@ class Parser(object):
         for bank in self._banks.values():
             bank.set_names(names)
 
-    #def set_ignore_version(self, value):
+    # def set_ignore_version(self, value):
     #    self._ignore_version = value
 
     def unload_bank(self, filename):
         if filename not in self._banks:
-            logging.warn("parser: can't unload " + filename)
+            logging.warning("parser: can't unload " + filename)
             return
 
         logging.info("parser: unloading " + filename)
