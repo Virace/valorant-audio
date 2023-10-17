@@ -4,13 +4,11 @@
 # @Site    : x-item.com
 # @Software: Pycharm
 # @Create  : 2023/10/14 22:53
-# @Update  : 2023/10/17 20:58
+# @Update  : 2023/10/17 21:24
 # @Detail  : 
 
 from wwiser.wwiser.parser.wparser import *
 from . import wio
-
-from loguru import logger as logging
 
 
 class Parser(object):
