@@ -7,12 +7,11 @@
 # @Update  : 2023/10/17 22:09
 # @Detail  : 
 
-import gc
 import json
 import os
 import shutil
 import traceback
-from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor, as_completed
+from concurrent.futures import ProcessPoolExecutor, as_completed
 
 from UE4Parse.Assets.Objects.FGuid import FGuid
 from UE4Parse.Encryption import FAESKey
@@ -23,6 +22,7 @@ from bs4 import BeautifulSoup
 from loguru import logger
 
 from Utils import common
+from Utils.common import check_time
 from config import AES_KEY, GAME_PATH, LOCALIZATION, OUTPUT_PATH, PACKAGE_PREFIX, VGMSTREAM_PATH
 from hook.wwiser.parser import wparser
 from hook.wwiser.viewer import wdumper
@@ -30,7 +30,7 @@ from hook.wwiser.viewer import wdumper
 
 # 1. 先取出{LOCALIZATION}_Audio-WindowsClient.pak，存放于临时目录
 # 2. 挂载pak文件
-# todo: 3. 遍历挂载目录，解析Event并取出wem
+# 3. 遍历挂载目录，解析Event并取出wem
 
 
 def get_valorant_version(path):
@@ -120,14 +120,14 @@ class ValorantAudio:
                 f'游戏目录下不存在{self.localization}_Audio-WindowsClient.pak，检查游戏目录是否正确')
 
     @classmethod
-    def _get_file(cls, file: FPakEntry, raw=False):
+    def _get_file(cls, file: FPakEntry, stream=False):
         """
         获取文件内容
         :param file:
-        :param raw:
+        :param stream:
         :return:
         """
-        if raw:
+        if stream:
             return file.get_data().base_stream
         else:
             return file.get_data().read()
@@ -139,7 +139,7 @@ class ValorantAudio:
         """
         aeskeys = {FGuid(0, 0, 0, 0): FAESKey(AES_KEY)}
 
-        gc.disable()
+        # gc.disable()
 
         self.provider = DefaultFileProvider(self.PAKS_PATH, VersionContainer(EUEVersion.GAME_VALORANT))
         self.provider.initialize()
@@ -187,8 +187,11 @@ class ValorantAudio:
             #     logger.debug(f'跳过{sid.attrs["value"]}，因为stream_type为{stream_type.attrs["value"]}')
             ids.append(sid.attrs['value'])
 
+        logger.info(f'解析{os.path.basename(bnk.Name)}，共{len(ids)}个音频')
+
         return ids
 
+    @check_time
     def get_audio_hash(self, files=None):
         """
         获取音频hash.
@@ -256,3 +259,45 @@ class ValorantAudio:
                     f.result()
                 except Exception as exc:
                     traceback.print_exc()
+
+    @check_time
+    def organize_audio_files(self):
+        """
+        整理音频文件
+        """
+
+        if len(os.listdir(self.AUDIO_PATH)) < 1:
+            self.get_audio()
+
+        if not os.path.exists(self.audio_hash_file) or os.path.getsize(self.audio_hash_file) == 0:
+            self.get_audio_hash()
+
+        with open(self.audio_hash_file, 'r', encoding='utf-8') as f:
+            hash_data = json.load(f)
+
+        for _type, _items in hash_data.items():
+            # 类型
+            _type_path = os.path.join(self.AUDIO_PATH, _type)
+            if not os.path.exists(_type_path):
+                os.makedirs(_type_path)
+
+            # VO的话为英雄名， 其他还是类型
+            for _name, _events in _items.items():
+                _name_path = os.path.join(_type_path, _name)
+                if not os.path.exists(_name_path):
+                    os.makedirs(_name_path)
+
+                for _event, _ids in _events.items():
+                    for _id in _ids:
+                        src = os.path.join(self.AUDIO_PATH, f'{_id}.wav')
+                        if not os.path.exists(src):
+                            logger.warning(f'音频文件{_id}.wav不存在，跳过')
+                            continue
+
+                        dst = os.path.join(_name_path, f'{_event}{"-" if _event else ""}{_id}.wav')
+                        # logger.info(f'{dst}')
+                        shutil.move(src, dst)
+
+    def __del__(self):
+        if self.provider:
+            self.provider.close()
