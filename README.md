@@ -135,6 +135,7 @@ hook是为了让wwiser可以直接作为模块使用，就改了部分源文件�
 - [@MinshuG](https://github.com/MinshuG/pyUE4Parse), **pyUE4Parse**
 - [@bnnm](https://github.com/bnnm/wwiser), **wwiser**
 - [@vgmstream](https://github.com/vgmstream/vgmstream), **vgmstream**
+- [@Morilli](https://github.com/Morilli/riot-manifests), **riot-manifests**
 
 - 以及**JetBrains**提供开发环境支持
 
