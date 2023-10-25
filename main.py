@@ -4,7 +4,7 @@
 # @Site    : x-item.com
 # @Software: Pycharm
 # @Create  : 2023/10/13 22:38
-# @Update  : 2023/10/26 0:23
+# @Update  : 2023/10/26 0:35
 # @Detail  : 
 
 import json
@@ -23,30 +23,10 @@ from loguru import logger
 
 import Utils.file
 from Utils import common
+from Utils.common import wem2wav
 from config import AES_KEY, GAME_PATH, LOCALIZATION, OUTPUT_PATH, PACKAGE_PREFIX, VGMSTREAM_PATH
 from hook.wwiser.parser import wparser
 from hook.wwiser.viewer import wdumper
-
-
-def get_valorant_version(path):
-    # https://github.com/Morilli/riot-manifests/blob/ebee7f7253a18898a02601ace90ed6492c7f9c6b/VALORANT.py#L7
-    with open(path, "rb") as exe_file:
-        data = exe_file.read()
-        pattern = "++Ares-Core+release-".encode("utf-16le")
-        pos = data.find(pattern) + len(pattern)
-        short_version = data[pos:pos + 10].decode("utf-16le")
-        pos += 10
-        version = '\0'
-        while '\0' in version:
-            pos += 2
-            version = data[pos:pos + 32].decode("utf-16le").rstrip("\x00")
-        return version
-
-
-def wem2wav(vgmstream_path, wem_path, wav_path, delete_wem=True):
-    os.system(f'{vgmstream_path} {wem_path} -o {wav_path}')
-    if delete_wem:
-        os.remove(wem_path)
 
 
 class ValorantAudio:
@@ -64,7 +44,7 @@ class ValorantAudio:
         self.game_path = game_path
         logger.info(f'游戏目录: {self.game_path}')
         self.out_path = out_path
-        self.game_version = get_valorant_version(
+        self.game_version = Utils.file.get_valorant_version(
             os.path.join(self.game_path, 'ShooterGame/Binaries/Win64/VALORANT-Win64-Shipping.exe'))
 
         logger.info(f'游戏版本号: {self.game_version}')
@@ -173,8 +153,8 @@ class ValorantAudio:
         soup = BeautifulSoup(data, features="lxml")
         sounds = soup.find_all('object', {'name': 'CAkSound'})
         for item in sounds:
-            bank_data = item.find('object', {'name': 'AkBankSourceData'})
-            stream_type = bank_data.find('field', {'name': 'StreamType'})
+            # bank_data = item.find('object', {'name': 'AkBankSourceData'})
+            # stream_type = bank_data.find('field', {'name': 'StreamType'})
             sid = item.find('field', {'name': 'sourceID'})
 
             # if stream_type.attrs['value'] != '0':
@@ -249,6 +229,7 @@ class ValorantAudio:
                 audio_hash[os.path.basename(name)] = dict(size=file.get_size(),
                                                           sha256=Utils.file.get_file_sha256(file_raw))
                 if save_file:
+                    # 减少IO
                     this_file = os.path.join(self.AUDIO_PATH, os.path.basename(file.Name))
                     with open(this_file, 'wb') as f:
                         f.write(file_raw)
@@ -303,11 +284,8 @@ class ValorantAudio:
         整理音频文件
         """
 
-        if len(os.listdir(self.AUDIO_PATH)) < 1:
-            self.get_audio()
-
         if not os.path.exists(self.event_hash_file) or os.path.getsize(self.event_hash_file) == 0:
-            self.get_audio_hash()
+            self.get_audio_hash(save_file=True)
 
         with open(self.event_hash_file, 'r', encoding='utf-8') as f:
             hash_data = json.load(f)
