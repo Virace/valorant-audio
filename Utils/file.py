@@ -4,7 +4,7 @@
 # @Site    : x-item.com
 # @Software: Pycharm
 # @Create  : 2023/10/25 22:57
-# @Update  : 2023/10/26 0:24
+# @Update  : 2023/10/26 0:35
 # @Detail  : 
 
 import hashlib
@@ -59,3 +59,17 @@ def get_file_size(filename):
     """
     return os.stat(filename).st_size
 
+
+def get_valorant_version(path):
+    # https://github.com/Morilli/riot-manifests/blob/ebee7f7253a18898a02601ace90ed6492c7f9c6b/VALORANT.py#L7
+    with open(path, "rb") as exe_file:
+        data = exe_file.read()
+        pattern = "++Ares-Core+release-".encode("utf-16le")
+        pos = data.find(pattern) + len(pattern)
+        short_version = data[pos:pos + 10].decode("utf-16le")
+        pos += 10
+        version = '\0'
+        while '\0' in version:
+            pos += 2
+            version = data[pos:pos + 32].decode("utf-16le").rstrip("\x00")
+        return version

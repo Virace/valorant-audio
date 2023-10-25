@@ -4,9 +4,10 @@
 # @Site    : x-item.com
 # @Software: Pycharm
 # @Create  : 2022/8/16 0:15
-# @Update  : 2023/10/26 0:25
+# @Update  : 2023/10/26 0:35
 # @Detail  : 通用函数
 
+import os
 import re
 import time
 from collections import defaultdict
@@ -101,3 +102,9 @@ def confirm(text):
             return False
         else:
             print('输入错误, 请重新输入.')
+
+
+def wem2wav(vgmstream_path, wem_path, wav_path, delete_wem=True):
+    os.system(f'{vgmstream_path} {wem_path} -o {wav_path}')
+    if delete_wem:
+        os.remove(wem_path)
