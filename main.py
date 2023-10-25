@@ -4,7 +4,7 @@
 # @Site    : x-item.com
 # @Software: Pycharm
 # @Create  : 2023/10/13 22:38
-# @Update  : 2023/10/17 22:09
+# @Update  : 2023/10/26 0:23
 # @Detail  : 
 
 import json
@@ -21,16 +21,11 @@ from UE4Parse.Versions import EUEVersion, VersionContainer
 from bs4 import BeautifulSoup
 from loguru import logger
 
+import Utils.file
 from Utils import common
-from Utils.common import check_time
 from config import AES_KEY, GAME_PATH, LOCALIZATION, OUTPUT_PATH, PACKAGE_PREFIX, VGMSTREAM_PATH
 from hook.wwiser.parser import wparser
 from hook.wwiser.viewer import wdumper
-
-
-# 1. 先取出{LOCALIZATION}_Audio-WindowsClient.pak，存放于临时目录
-# 2. 挂载pak文件
-# 3. 遍历挂载目录，解析Event并取出wem
 
 
 def get_valorant_version(path):
@@ -84,12 +79,13 @@ class ValorantAudio:
         self.HASH_PATH = os.path.join(self.out_path, 'hashes', self.game_version)
         self.AUDIO_PATH = os.path.join(self.out_path, 'audios', self.game_version)
 
-        common.makedirs(self.TEMP_PATH, True)
-        common.makedirs(self.PAKS_PATH)
-        common.makedirs(self.HASH_PATH)
-        common.makedirs(self.AUDIO_PATH)
+        Utils.file.makedirs(self.TEMP_PATH, True)
+        Utils.file.makedirs(self.PAKS_PATH)
+        Utils.file.makedirs(self.HASH_PATH)
+        Utils.file.makedirs(self.AUDIO_PATH)
 
-        self.audio_hash_file = os.path.join(self.HASH_PATH, 'data.json')
+        self.event_hash_file = os.path.join(self.HASH_PATH, 'event.json')
+        self.audio_hash_file = os.path.join(self.HASH_PATH, 'audio.json')
 
         self.pak_file = os.path.join(self.PAKS_PATH, f'{self.localization}_Audio-WindowsClient.pak')
 
@@ -98,7 +94,7 @@ class ValorantAudio:
             if not common.confirm('目录中PAK文件已存在，是否继续？(继续则将重新解析当前版本.)'):
                 raise FileExistsError(f'{self.pak_file}已存在，退出程序')
 
-        common.makedirs(self.PAKS_PATH, True)
+        Utils.file.makedirs(self.PAKS_PATH, True)
         self._copy_pak_file()
 
         logger.debug(f'pak文件: {self.pak_file}')
@@ -153,6 +149,7 @@ class ValorantAudio:
     def get_audio_ids(self, bnk: FPakEntry):
         """
         获取音频id
+        :param bnk: bnk文件
         :return:
         """
 
@@ -189,15 +186,38 @@ class ValorantAudio:
 
         logger.info(f'解析{os.path.basename(bnk.Name)}，共{len(ids)}个音频')
 
+        # (长度, 名称) 排序
+        ids.sort(key=lambda x: (len(x), x))
+
         return ids
 
-    @check_time
-    def get_audio_hash(self, files=None):
+    @common.check_time
+    def get_audio_hash(self, files=None, save_file=False):
         """
         获取音频hash.
         :param files:
+        :param save_file: 是否保存文件, 计算文件校验码时可直接保存文件
         """
-        result = dict()
+
+        # 字典递归排序
+        def sort_dict(data, key=lambda x: x[0], reverse=False):
+            """
+            字典递归排序, 列表不动
+            :param data:
+            :param key:
+            :param reverse:
+            :return:
+            """
+            if isinstance(data, dict):
+                return {k: sort_dict(v, key, reverse) for k, v in
+                        sorted(data.items(), key=key, reverse=reverse)}
+            elif isinstance(data, list):
+                return [sort_dict(v, key, reverse) for v in data]
+            else:
+                return data
+
+        event_hash = dict()
+        audio_hash = dict()
         if files is None:
             files = self.mount_paks()
 
@@ -209,11 +229,11 @@ class ValorantAudio:
                 # Play_HURM_Multikill_Gekko
                 _, _type, _item, *_event = name.split('_')
 
-                if _type not in result:
-                    result[_type] = dict()
+                if _type not in event_hash:
+                    event_hash[_type] = dict()
 
-                if _item not in result[_type]:
-                    result[_type][_item] = dict()
+                if _item not in event_hash[_type]:
+                    event_hash[_type][_item] = dict()
                 _event = '_'.join(_event)
 
                 # logger.debug(f'解析{name}')
@@ -221,12 +241,27 @@ class ValorantAudio:
                 logger.debug(f'解析{os.path.basename(name)}，共{len(ids)}个音频')
                 if len(ids) == 0:
                     logger.warning(f'解析{os.path.basename(name)}，未找到音频')
-                result[_type][_item][_event] = ids
+                event_hash[_type][_item][_event] = ids
 
+            elif 'Media' in name:
+                file_raw = self._get_file(file, False)
+
+                audio_hash[os.path.basename(name)] = dict(size=file.get_size(),
+                                                          sha256=Utils.file.get_file_sha256(file_raw))
+                if save_file:
+                    this_file = os.path.join(self.AUDIO_PATH, os.path.basename(file.Name))
+                    with open(this_file, 'wb') as f:
+                        f.write(file_raw)
+
+        event_hash = sort_dict(event_hash)
+        with open(self.event_hash_file, 'w+', encoding='utf-8') as f:
+            json.dump(event_hash, f, ensure_ascii=False, indent=4)
+
+        audio_hash = sort_dict(audio_hash, key=lambda x: (len(x[0]), x[0]))
         with open(self.audio_hash_file, 'w+', encoding='utf-8') as f:
-            json.dump(result, f, ensure_ascii=False, indent=4)
+            json.dump(audio_hash, f, ensure_ascii=False, indent=4)
 
-        return result
+        return event_hash
 
     def get_audio(self, files=None):
         """
@@ -243,16 +278,18 @@ class ValorantAudio:
                 if 'Event' in name:
                     continue
 
-                logger.info(f'保存{os.path.basename(file.Name)}')
-
                 filename = os.path.join(self.AUDIO_PATH, os.path.basename(file.Name))
-                with open(filename, 'wb') as f:
-                    f.write(self._get_file(file))
 
-                # 线程池
+                # 如果文件不存在或者文件大小不一致则重新写入
+                if not os.path.exists(filename) or os.path.getsize(filename) != file.get_size():
+                    logger.debug(f'写入{os.path.basename(file.Name)}')
+                    with open(filename, 'wb') as f:
+                        f.write(self._get_file(file))
 
-                fs[e.submit(wem2wav, VGMSTREAM_PATH, filename,
-                            os.path.splitext(filename)[0] + '.wav', True)] = filename
+                wav_file = os.path.splitext(filename)[0] + '.wav'
+                if not os.path.exists(wav_file):
+                    fs[e.submit(wem2wav, VGMSTREAM_PATH, filename,
+                                wav_file, True)] = filename
 
             for f in as_completed(fs):
                 try:
@@ -260,7 +297,7 @@ class ValorantAudio:
                 except Exception as exc:
                     traceback.print_exc()
 
-    @check_time
+    @common.check_time
     def organize_audio_files(self):
         """
         整理音频文件
@@ -269,10 +306,10 @@ class ValorantAudio:
         if len(os.listdir(self.AUDIO_PATH)) < 1:
             self.get_audio()
 
-        if not os.path.exists(self.audio_hash_file) or os.path.getsize(self.audio_hash_file) == 0:
+        if not os.path.exists(self.event_hash_file) or os.path.getsize(self.event_hash_file) == 0:
             self.get_audio_hash()
 
-        with open(self.audio_hash_file, 'r', encoding='utf-8') as f:
+        with open(self.event_hash_file, 'r', encoding='utf-8') as f:
             hash_data = json.load(f)
 
         for _type, _items in hash_data.items():
