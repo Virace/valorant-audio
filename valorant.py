@@ -4,7 +4,7 @@
 # @Site    : x-item.com
 # @Software: Pycharm
 # @Create  : 2023/10/26 13:18
-# @Update  : 2023/10/26 15:56
+# @Update  : 2023/10/26 16:05
 # @Detail  : 
 
 import json
@@ -324,11 +324,6 @@ class ValorantAudio:
             self.provider.close()
 
 
-# 版本对比
-def compare_version(a: ValorantAudioInfo, b: ValorantAudioInfo):
-    logger.info(f'比较版本: {a.version} - {b.version}')
-
-
 # 根据事件和音频哈希文件读取audio_info
 def get_audio_info(event_hash: Union[str, dict], audio_hash: Union[str, dict]):
     """
@@ -377,12 +372,3 @@ def get_audio_info(event_hash: Union[str, dict], audio_hash: Union[str, dict]):
                     files.append(_hash)
 
     return ValorantAudioInfo(version=event_version, files=files)
-
-
-if __name__ == '__main__':
-    a = get_audio_info(r"E:\Caches\Valorant\Script\hashes\07.08.00.1007528\event.json",
-                       r"E:\Caches\Valorant\Script\hashes\07.08.00.1007528\audio.json")
-    b = get_audio_info(r"E:\Caches\Valorant\Script\hashes\07.08.00.1007558\event.json",
-                       r"E:\Caches\Valorant\Script\hashes\07.08.00.1007558\audio.json")
-    c1, c2 = a.diff(b)
-    print(1)
