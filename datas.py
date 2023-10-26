@@ -4,7 +4,7 @@
 # @Site    : x-item.com
 # @Software: Pycharm
 # @Create  : 2023/10/26 0:39
-# @Update  : 2023/10/26 15:56
+# @Update  : 2023/10/26 16:13
 # @Detail  : 
 
 from dataclasses import dataclass
@@ -63,7 +63,7 @@ class ValorantAudioInfo(object):
         bvb, bvs, _, bva = other.version.split('.')
 
         # 偷个懒，只用修订数来判断哪个是新版本
-        if int(ava) > int(bva):
+        if float(ava) > float(bva):
             return ad, bd
         return bd, ad
 
