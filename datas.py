@@ -4,7 +4,7 @@
 # @Site    : x-item.com
 # @Software: Pycharm
 # @Create  : 2023/10/26 0:39
-# @Update  : 2023/10/26 16:13
+# @Update  : 2023/10/26 16:59
 # @Detail  : 
 
 from dataclasses import dataclass
@@ -46,7 +46,7 @@ class ValorantAudioInfo(object):
         """
         比较两个版本的文件差异
         :param other:
-        :return: （新增, 删除）
+        :return: （删除, 新增）
         """
 
         # 新diff旧返回的是新增的文件

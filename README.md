@@ -51,8 +51,8 @@
    ```sh
    poetry install
    ```
-3. 创建启动脚本
-   随便创建一个文件，比如`run.py`，内容如下：
+3. 启动脚本
+   随便创建一个文件，比如`run.py`，内容可参考`main.py`：
    ```python
    from valorant import ValorantAudio
    va = ValorantAudio()
@@ -75,7 +75,16 @@
 
 ###### 注意事项
 
-输出目录下有audios、hashes、paks以及temps文件夹。
+
+
+
+### 文件目录说明
+
+###### 代码目录
+hook是为了让wwiser可以直接作为模块使用，就改了部分源文件。
+
+###### 输出目录
+audios、hashes、paks以及temps文件夹。
 
 **audios**: 为提取出的音频文件 
 
@@ -84,45 +93,6 @@
 **paks**: 因为wwiser代码默认挂载文件夹下所有paks文件，所以这里将需要的复制到此文件夹下，以便提高解析速度
 
 **temps**: 临时文件夹
-
-
-### 文件目录说明
-
-eg:
-
-```
-│  .gitignore
-│  .gitmodules
-│  config.py
-│  LICENSE
-│  main.py
-│  poetry.lock
-│  pyproject.toml
-│  README.md
-│  requirements.txt   
-│                      
-├─hook
-│  │  __init__.py
-│  │  
-│  └─wwiser
-│      │  __init__.py
-│      │  
-│      ├─parser
-│      │  │  wio.py
-│      │  │  wparser.py
-│      │  └─  __init__.py
-│      │          
-│      └─viewer
-│          └─ wdumper.py
-│          
-├─Utils
-│  │  common.py
-│  └─__init__.py
-│          
-└─wwiser
-
-```
-hook是为了让wwiser可以直接作为模块使用，就改了部分源文件。
 
 ### 维护者
 

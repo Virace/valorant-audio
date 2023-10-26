@@ -4,7 +4,7 @@
 # @Site    : x-item.com
 # @Software: Pycharm
 # @Create  : 2023/10/26 13:18
-# @Update  : 2023/10/26 16:05
+# @Update  : 2023/10/26 16:56
 # @Detail  : 
 
 import json
@@ -179,7 +179,7 @@ class ValorantAudio:
         """
         获取音频hash.
         :param files:
-        :param save_file: 是否保存文件, 计算文件校验码时可直接保存文件
+        :param save_file: 是否保存文件, 计算文件校验码时可直接保存文件(wem)
         """
 
         # 字典递归排序
