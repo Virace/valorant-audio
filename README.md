@@ -54,7 +54,7 @@
 3. 创建启动脚本
    随便创建一个文件，比如`run.py`，内容如下：
    ```python
-   from main import ValorantAudio
+   from valorant import ValorantAudio
    va = ValorantAudio()
    va.organize_audio_files()
    ```
@@ -62,7 +62,7 @@
 4. 执行脚本
    执行前确保配置文件中游戏路径以及输出路径正确。如果你不喜欢配置文件方式执行脚本或想把此脚本作为模块使用，也可以查看**ValorantAudio**类的构造函数，是可以将相关参数直接在创建对象时传入的。
    ```python
-   from main import ValorantAudio
+   from valorant import ValorantAudio
    va = ValorantAudio(
         game_path=r"游戏目录",
         out_path=r"输出目录",
