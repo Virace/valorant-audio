@@ -1,4 +1,4 @@
 beautifulsoup4==4.12.2
 loguru==0.7.2
 lxml==4.9.3
-UE4Parse @ git+ssh://git@github.com/MinshuG/pyUE4Parse.git@4714f08d011445f959f51aa13865f6641f78c5d6
+UE4Parse @ git+https://github.com/MinshuG/pyUE4Parse.git@4714f08d011445f959f51aa13865f6641f78c5d6
