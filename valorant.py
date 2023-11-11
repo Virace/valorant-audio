@@ -4,7 +4,7 @@
 # @Site    : x-item.com
 # @Software: Pycharm
 # @Create  : 2023/10/26 13:18
-# @Update  : 2023/10/26 16:56
+# @Update  : 2023/11/12 2:15
 # @Detail  : 
 
 import json
@@ -273,10 +273,11 @@ class ValorantAudio:
                     with open(filename, 'wb') as f:
                         f.write(self._get_file(file))
 
-                wav_file = os.path.splitext(filename)[0] + '.wav'
-                if not os.path.exists(wav_file):
-                    fs[e.submit(wem2wav, VGMSTREAM_PATH, filename,
-                                wav_file, True)] = filename
+                if VGMSTREAM_PATH:
+                    wav_file = os.path.splitext(filename)[0] + '.wav'
+                    if not os.path.exists(wav_file):
+                        fs[e.submit(wem2wav, VGMSTREAM_PATH, filename,
+                                    wav_file, True)] = filename
 
             for f in as_completed(fs):
                 try:
@@ -372,3 +373,4 @@ def get_audio_info(event_hash: Union[str, dict], audio_hash: Union[str, dict]):
                     files.append(_hash)
 
     return ValorantAudioInfo(version=event_version, files=files)
+
