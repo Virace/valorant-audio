@@ -41,7 +41,7 @@
 
 1. Clone
    ```sh
-   git clone https://github.com/Virace/valorant-audio.git
+   git clone https://github.com/Virace/valorant-audio.git  --recursive
    ```
 2. 安装依赖
    ```sh
@@ -66,12 +66,20 @@
    va = ValorantAudio(
         game_path=r"游戏目录",
         out_path=r"输出目录",
-        aes_key="chs",
         localization="zh_CN",
         package_prefix="ShooterGame/Content/WwiseAudio",
     )
    va.organize_audio_files()
    ```
+5. 配置文件
+   三种方法可以给ValorantAudio传入参数，
+       
+       - 通过config.py文件
+       - 通过构造函数
+       - 通过环境变量
+   其中环境变量为了做出区分，加入了VAL_前缀，比如**VAL_GAME_PATH**，**VAL_OUTPUT_PATH**，**VAL_LOCALIZATION**，**VAL_VGMSTREAM_PATH**，**VAL_PACKAGE_PREFIX**
+
+ 
 
 ###### 注意事项
 
