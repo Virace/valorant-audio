@@ -4,7 +4,7 @@
 # @Site    : x-item.com
 # @Software: Pycharm
 # @Create  : 2023/10/26 13:18
-# @Update  : 2023/11/12 2:15
+# @Update  : 2023/11/26 21:02
 # @Detail  : 
 
 import json
@@ -24,16 +24,33 @@ from loguru import logger
 import Utils.file
 from Utils import common
 from Utils.common import wem2wav
-from config import AES_KEY, GAME_PATH, LOCALIZATION, OUTPUT_PATH, PACKAGE_PREFIX, VGMSTREAM_PATH
+from config import GAME_PATH, LOCALIZATION, OUTPUT_PATH, PACKAGE_PREFIX, VGMSTREAM_PATH
 from datas import AudioHash, ValorantAudioInfo
 from hook.wwiser.parser import wparser
 from hook.wwiser.viewer import wdumper
 
 from typing import Union
 
+# 如果不提供则从环境变量中获取
+ENV_ONLY = os.getenv('VAL_ENV_ONLY', False)
+# 如果 ENV_ONLY 为 True 则所有参数都从环境变量中获取，否则从config.py中获取
+# 如果 从config.py中获取的参数为None，则从环境变量中获取
+if ENV_ONLY:
+    GAME_PATH = os.getenv('VAL_GAME_PATH', GAME_PATH)
+    LOCALIZATION = os.getenv('VAL_LOCALIZATION', LOCALIZATION)
+    OUTPUT_PATH = os.getenv('VAL_OUTPUT_PATH', OUTPUT_PATH)
+    PACKAGE_PREFIX = os.getenv('VAL_PACKAGE_PREFIX', PACKAGE_PREFIX)
+    VGMSTREAM_PATH = os.getenv('VAL_VGMSTREAM_PATH', VGMSTREAM_PATH)
+else:
+    GAME_PATH = GAME_PATH or os.getenv('VAL_GAME_PATH')
+    OUTPUT_PATH = OUTPUT_PATH or os.getenv('VAL_OUTPUT_PATH')
+    LOCALIZATION = LOCALIZATION or os.getenv('VAL_LOCALIZATION')
+    PACKAGE_PREFIX = PACKAGE_PREFIX or os.getenv('VAL_PACKAGE_PREFIX')
+    VGMSTREAM_PATH = VGMSTREAM_PATH or os.getenv('VAL_VGMSTREAM_PATH')
+
 
 class ValorantAudio:
-    def __init__(self, game_path=GAME_PATH, out_path=OUTPUT_PATH, aes_key=AES_KEY,
+    def __init__(self, game_path=GAME_PATH, out_path=OUTPUT_PATH, aes_key='',
                  localization=LOCALIZATION, package_prefix=PACKAGE_PREFIX):
         """
         初始化
@@ -51,7 +68,10 @@ class ValorantAudio:
             os.path.join(self.game_path, 'ShooterGame/Binaries/Win64/VALORANT-Win64-Shipping.exe'))
 
         logger.info(f'游戏版本号: {self.game_version}')
-        self.aes_key = aes_key
+
+        # 解密密钥 https://discord.com/channels/637265123144237061/1090601049909362739/109060104990936273
+        # 这个KEY一般不会变
+        self.aes_key = '0x4BE71AF2459CF83899EC9DC2CB60E22AC4B3047E0211034BBABE9D174C069DD6' or aes_key
         self.localization = localization
         self.package_prefix = package_prefix
 
@@ -373,4 +393,3 @@ def get_audio_info(event_hash: Union[str, dict], audio_hash: Union[str, dict]):
                     files.append(_hash)
 
     return ValorantAudioInfo(version=event_version, files=files)
-
