@@ -74,10 +74,23 @@
 5. 配置文件
    三种方法可以给ValorantAudio传入参数，
        
-       - 通过config.py文件
        - 通过构造函数
+       - 通过config.py文件
        - 通过环境变量
-   其中环境变量为了做出区分，加入了VAL_前缀，比如**VAL_GAME_PATH**，**VAL_OUTPUT_PATH**，**VAL_LOCALIZATION**，**VAL_VGMSTREAM_PATH**，**VAL_PACKAGE_PREFIX**
+   构造函数优先级最高。 
+
+   其中环境变量为了做出区分，加入了VAL_前缀
+     ```
+    VAL_ENV_ONLY
+   
+    VAL_GAME_PATH
+    VAL_OUTPUT_PATH
+    VAL_LOCALIZATION
+    VAL_VGMSTREAM_PATH
+    VAL_PACKAGE_PREFIX
+    ```
+   **VAL_ENV_ONLY** 为 True 时，会优先使用环境变量，否则会优先使用config.py。
+   
 
  
 
