@@ -4,7 +4,7 @@
 # @Site    : x-item.com
 # @Software: Pycharm
 # @Create  : 2023/10/26 13:18
-# @Update  : 2023/11/26 21:25
+# @Update  : 2023/11/27 23:59
 # @Detail  : 
 
 import json
@@ -136,7 +136,7 @@ class ValorantAudio:
         挂载pak文件, 返回文件列表
         :return:
         """
-        aeskeys = {FGuid(0, 0, 0, 0): FAESKey(AES_KEY)}
+        aeskeys = {FGuid(0, 0, 0, 0): FAESKey(self.aes_key)}
 
         # gc.disable()
 
