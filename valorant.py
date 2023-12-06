@@ -4,7 +4,7 @@
 # @Site    : x-item.com
 # @Software: Pycharm
 # @Create  : 2023/10/26 13:18
-# @Update  : 2023/11/27 23:59
+# @Update  : 2023/12/6 10:06
 # @Detail  : 
 
 import json
@@ -33,6 +33,7 @@ from typing import Union
 
 # 如果不提供则从环境变量中获取
 ENV_ONLY = bool(os.getenv('VAL_ENV_ONLY', False))
+logger.info(f'是优先环境变量: {ENV_ONLY}')
 # 如果 ENV_ONLY 为 True 则所有参数都从环境变量中获取，否则从config.py中获取
 # 如果 从config.py中获取的参数为None，则从环境变量中获取
 if ENV_ONLY:
@@ -393,3 +394,4 @@ def get_audio_info(event_hash: Union[str, dict], audio_hash: Union[str, dict]):
                     files.append(_hash)
 
     return ValorantAudioInfo(version=event_version, files=files)
+
